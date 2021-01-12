@@ -19,7 +19,10 @@ def get_sysparam(data,paramrow):
 
     return param,nump
 
-def readtitleparam(title):
+def readtitleparam(title,sw=0):
+    #sw=0: str
+    #sw=1: int
+    #sw=2: float
 
     titleparam=[]
     title=title.split('_')
@@ -29,25 +32,31 @@ def readtitleparam(title):
     for t in title:
         titleparam.append(re.sub('\\D','',t))
 
-    return [re.findall(pattern, t)[0] for t in title]
+    if sw==0: out=[re.findall(pattern, t)[0] for t in title]
+    if sw==1: out=[int(re.findall(pattern, t)[0]) for t in title]
+    if sw==2: out=[float(re.findall(pattern, t)[0]) for t in title]
 
-def file_para(path,comtxt,title=None):
+    return out
+
+def file_para(path,comtxt,title=None,paramnum=None):
     #comtxt : common text
     #paramum : parameter number
 
-    for dir in natsorted(os.listdir(path)):
-        if comtxt in dir:
-            tprm = readtitleparam(dir)
-            paramnum = len(tprm)
-            break
+    if paramnum is None:
+        for dir in natsorted(os.listdir(path)):
+            if comtxt in dir:
+                tprm = readtitleparam(dir)
+                paramnum = len(tprm)
+                break
 
     out = np.empty((0, paramnum + 1))
     for dir in natsorted(os.listdir(path)):
         if comtxt in dir:
             data = float(np.loadtxt(path + '/' + dir))
-            tprm = readtitleparam(dir)
+            tprm = readtitleparam(dir,2)
             tprm.append(data)
-            out = np.append(out, np.array([[tprm]], axis=0))
+
+            out = np.append(out, np.array([tprm]), axis=0)
 
     if title is None: title='stat_data.csv'
     np.savetxt(path + '/' + title, out, delimiter=',')
