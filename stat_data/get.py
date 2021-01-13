@@ -42,20 +42,21 @@ def file_para(path,comtxt,title=None,paramnum=None):
     #comtxt : common text
     #paramum : parameter number
 
-    if paramnum is None:
-        for dir in natsorted(os.listdir(path)):
-            if comtxt in dir:
-                tprm = readtitleparam(dir)
-                paramnum = len(tprm)
-                break
-
-    out = np.empty((0, paramnum + 1))
     for dir in natsorted(os.listdir(path)):
         if comtxt in dir:
-            data = float(np.loadtxt(path + '/' + dir))
-            tprm = readtitleparam(dir,2)
-            tprm.append(data)
+            tprm = readtitleparam(dir)
+            data = np.loadtxt(path + '/' + dir, dtype='float')
+            if paramnum is None:
+                paramnum = len(tprm)
+            datanum=data.shape[0]
+            break
 
+    out = np.empty((0, paramnum + datanum))
+    for dir in natsorted(os.listdir(path)):
+        if comtxt in dir:
+            data = np.loadtxt(path + '/' + dir, dtype='float')
+            tprm = readtitleparam(dir,2)
+            tprm=tprm+data.tolist()
             out = np.append(out, np.array([tprm]), axis=0)
 
     if title is None: title='stat_data.csv'
